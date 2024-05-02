@@ -1,0 +1,209 @@
+function pp {
+    notepad $PROFILE
+}
+
+function upgrade{
+    . $PROFILE
+}
+
+# Función para eliminar un archivo o carpeta
+function delete {
+    Param(
+        [string]$Name
+    )
+
+    # Verificar si el elemento a eliminar es un archivo o una carpeta
+    if (Test-Path $Name -PathType Leaf) {
+        # Si es un archivo, eliminarlo
+        Remove-Item -Path $Name -Force
+    } elseif (Test-Path $Name -PathType Container) {
+        # Si es una carpeta, eliminarla
+        Remove-Item -Path $Name -Recurse -Force
+    } else {
+        Write-Host "El elemento especificado no existe."
+    }
+}
+
+
+# Si NOse proporciona una extensión como .txt, SE CREA UNA CARPETA.
+# Función para crear un archivo de texto (.txt) o una carpeta
+function new{
+    Param(
+        [string]$Name,
+        [string]$Extension = $null
+    )
+
+    if ($Extension -eq $null) {
+        # Si no se proporciona ninguna extensión, crear una carpeta
+        New-Item -ItemType Directory -Path (Join-Path -Path $PWD -ChildPath $Name)
+    } else {
+        # Si se proporciona una extensión, crear un archivo con esa extensión
+        $FileName = $Name + $Extension
+        $FilePath = Join-Path -Path $PWD -ChildPath $FileName
+        New-Item -ItemType File -Path $FilePath
+    }
+}
+
+function new2 {
+    Param(
+        [string]$Name,
+        [string]$Extension = $null
+    )
+
+    if (-not $Extension) {
+        # Si no se proporciona ninguna extensión, crear una carpeta
+        New-Item -ItemType Directory -Path (Join-Path -Path $PWD -ChildPath $Name)
+    } else {
+        # Si se proporciona una extensión, crear un archivo con esa extensión
+        $FileName = $Name + $Extension
+        $FilePath = Join-Path -Path $PWD -ChildPath $FileName
+        New-Item -ItemType File -Path $FilePath
+    }
+}
+
+
+
+function ff {    
+    Write-Output ''
+    $Archivos = Get-ChildItem
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+
+    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+function ffr.pdf {
+    Write-Output ''
+    $ArchivosPDF = Get-ChildItem | Where-Object { $_.Extension -eq ".pdf" } 
+    $CantidadArchivosPDF = $ArchivosPDF.Count
+
+    $ArchivosPDF | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de archivos PDF: $CantidadArchivosPDF"
+    Write-Output ''
+}
+
+function ffr.folder {
+    Write-Output ''
+    $Carpetas = Get-ChildItem | Where-Object { $_.PSIsContainer -eq $true }
+    $CantidadCarpetas = $Carpetas.Count
+
+    $Carpetas | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+
+function ffr {    
+    Write-Output ''
+    $Archivos = Get-ChildItem | Sort-Object LastWriteTime
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+
+    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+function ffr.pdf {
+    Write-Output ''
+    $ArchivosPDF = Get-ChildItem | Where-Object { $_.Extension -eq ".pdf" } | Sort-Object LastWriteTime
+    $CantidadArchivosPDF = $ArchivosPDF.Count
+
+    $ArchivosPDF | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de archivos PDF: $CantidadArchivosPDF"
+    Write-Output ''
+}
+
+function ffr.folder {
+    Write-Output ''
+    $Carpetas = Get-ChildItem | Where-Object { $_.PSIsContainer -eq $true } | Sort-Object LastWriteTime
+    $CantidadCarpetas = $Carpetas.Count
+
+    $Carpetas | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+
+
+function e {
+    explorer.exe .
+    Write-Output ''
+}
+
+#dont use this, oo is to far from left hand
+function oo {
+    param(
+        [string]$RutaArchivo
+    )
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    Start-Process -FilePath $RutaCompleta
+}
+
+function qq {
+    param(
+        [string]$RutaArchivo
+    )
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    Start-Process -FilePath $RutaCompleta
+}
+
+function pl {
+    param(
+        [string]$Titulo = "Nueva ventana de PowerShell"
+    )
+
+    $Process = Start-Process powershell -WorkingDirectory $PWD.Path -PassThru
+    $Process.WaitForInputIdle()
+    $MainWindow = $Process.MainWindowHandle
+    $Win32ShowWindowAsync = Add-Type -MemberDefinition @"
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+"@ -Name "Win32ShowWindowAsync" -Namespace Win32Functions -PassThru
+    [Win32Functions.Win32ShowWindowAsync]::ShowWindowAsync($MainWindow, 2) | Out-Null
+    [Win32Functions.Win32ShowWindowAsync]::SetForegroundWindow($MainWindow) | Out-Null
+}
+
+function csc{
+    Set-Location "D:\OneDrive\Mov\dentro1\dentro2\dentro3\CySed_&Dict\dentro2 CumpleMio\dentro4 Inicio COmpatible"
+}
+
+function csi{
+    Set-Location "D:\OneDrive\Mov\dentro1\dentro2\dentro3\CySed_&Dict\Inicio_AntiIncompatible_Informarte"
+}
+
+
+function wd{
+    Set-Location "D:\OneDrive\Mov"
+}
+
+function dd{
+    Set-Location "D:\ADescargas"
+}
+
+function ddd{
+    Set-Location "D:\"
+}
+
+function cc{
+    Set-Location "C:\"
+}

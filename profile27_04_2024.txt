@@ -1,0 +1,524 @@
+function pp {
+    notepad $PROFILE
+}
+
+function upgrade{
+    . $PROFILE
+}
+
+function fff {
+    param(
+        [string]$Extension
+    )
+
+    Write-Output ''
+    $Archivos = Get-ChildItem -File | Where-Object { $_.Extension -eq ".$Extension" }
+    $CantidadArchivos = $Archivos.Count
+
+    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
+
+    Write-Output ''
+    Write-Output "Cantidad de archivos con la extensión '.$Extension': $CantidadArchivos"
+    Write-Output ''
+}
+
+
+
+function xsx{
+    param(
+        [string]$nombreArchivo = "ArchivoExcel.xlsx"
+    )
+
+    $excel = New-Object -ComObject Excel.Application
+    $excel.Visible = $true
+    $workbook = $excel.Workbooks.Add()
+    $rutaCompleta = Join-Path -Path (Get-Location).Path -ChildPath $nombreArchivo
+    $workbook.SaveAs($rutaCompleta)
+    Invoke-Item $rutaCompleta
+}
+
+
+
+# Función para renombrar un archivo
+function rename {
+    param (
+        [string]$NombreActual,
+        [string]$NuevoNombre
+    )
+
+    if (-not $NombreActual) {
+        Write-Output "Por favor especifica el nombre actual del archivo que deseas renombrar."
+        return
+    }
+
+    if (-not $NuevoNombre) {
+        Write-Output "Por favor especifica el nuevo nombre para el archivo."
+        return
+    }
+
+    $RutaArchivo = Join-Path -Path $pwd.Path -ChildPath $NombreActual
+
+    if (Test-Path $RutaArchivo -PathType Leaf) {
+        # Construir la ruta completa para el nuevo nombre
+        $NuevaRutaArchivo = Join-Path -Path $pwd.Path -ChildPath $NuevoNombre
+
+        # Renombrar el archivo utilizando Rename-Item
+        Rename-Item -Path $RutaArchivo -NewName $NuevoNombre -Force
+        Write-Output "Se ha renombrado el archivo '$NombreActual' como '$NuevoNombre'."
+    } else {
+        Write-Output "El archivo '$NombreActual' no existe en la ubicación actual o no es un archivo válido."
+    }
+}
+
+
+
+# Variable global para almacenar la última ubicación del archivo cortado (movido)
+$global:LastCutItemLocation = $null
+# Función para realizar un duplicado (con nombre modificado) de un archivo o carpeta en una ubicación específica
+function copy {
+    param (
+        [string]$NombreElemento,
+        [string]$NuevoNombre = $null
+    )
+
+    if (-not $NombreElemento) {
+        Write-Output "Por favor especifica el nombre del archivo o carpeta que deseas duplicar."
+        return
+    }
+
+    if (-not $NuevoNombre) {
+        # Obtener el nombre base y la extensión del archivo o carpeta
+        $NombreBase = [System.IO.Path]::GetFileNameWithoutExtension($NombreElemento)
+        $Extension = [System.IO.Path]::GetExtension($NombreElemento)
+
+        # Definir el nuevo nombre con el sufijo "1"
+        $NuevoNombre = $NombreBase + "1" + $Extension
+    }
+
+    $Origen = Join-Path -Path $pwd.Path -ChildPath $NombreElemento
+
+    if (Test-Path $Origen) {
+        # Definir la ubicación de destino para el duplicado en D:\buffertemporal con el nuevo nombre
+        $Destino = Join-Path -Path "D:\buffertemporal" -ChildPath $NuevoNombre
+
+        # Copiar el archivo o carpeta a la ubicación de destino con el nuevo nombre
+        Copy-Item -Path $Origen -Destination $Destino -Recurse
+        Write-Output "Se ha realizado un duplicado de '$NombreElemento' como '$NuevoNombre' en la ubicación '$Destino'."
+    } else {
+        Write-Output "El archivo o carpeta '$NombreElemento' no existe en la ubicación actual."
+    }
+}
+
+
+
+# Función para cortar (mover) un archivo desde la ubicación actual a una ubicación específica
+function cut {
+    param (
+        [string]$NombreElemento
+    )
+
+    if (-not $NombreElemento) {
+        Write-Output "Por favor especifica el nombre del archivo o carpeta que deseas cortar (moviéndolo)."
+        return
+    }
+
+    $Origen = Join-Path -Path $pwd.Path -ChildPath $NombreElemento
+
+    if (Test-Path $Origen) {
+        # Mover el archivo a la ubicación específica para después pegarlo con paste
+        $Destino = Join-Path -Path "D:\buffertemporal" -ChildPath $NombreElemento
+        Move-Item -Path $Origen -Destination $Destino -Force
+        $global:LastCutItemLocation = $Destino  # Almacenar la ubicación del archivo cortado
+        Write-Output "Se ha cortado (movido) '$NombreElemento' a la ubicación '$Destino'."
+    } else {
+        Write-Output "El archivo o carpeta '$NombreElemento' no existe en la ubicación actual."
+    }
+}
+
+# Función para pegar el archivo cortado desde una ubicación específica a otra ubicación
+function paste {
+    param (
+        [string]$Destino
+    )
+
+    if (-not $Destino) {
+        Write-Output "Por favor especifica la ubicación de destino donde deseas pegar el archivo."
+        return
+    }
+
+    if (-not $global:LastCutItemLocation) {
+        Write-Output "No hay archivos cortados para pegar."
+        return
+    }
+
+    # Obtener el nombre base del archivo cortado
+    $NombreElemento = [System.IO.Path]::GetFileName($global:LastCutItemLocation)
+    $DestinoCompleto = Join-Path -Path $Destino -ChildPath $NombreElemento
+
+    # Pegar el archivo cortado en la ubicación de destino
+    Move-Item -Path $global:LastCutItemLocation -Destination $DestinoCompleto -Force
+    $global:LastCutItemLocation = $null  # Limpiar la variable después de pegar
+    Write-Output "Se ha pegado el archivo '$NombreElemento' en la ubicación '$Destino'."
+}
+
+
+
+
+# Función para eliminar un archivo o carpeta
+function delete {
+    Param(
+        [string]$Name
+    )
+
+    # Verificar si el elemento a eliminar es un archivo o una carpeta
+    if (Test-Path $Name -PathType Leaf) {
+        # Si es un archivo, eliminarlo
+        Remove-Item -Path $Name -Force
+    } elseif (Test-Path $Name -PathType Container) {
+        # Si es una carpeta, eliminarla
+        Remove-Item -Path $Name -Recurse -Force
+    } else {
+        Write-Host "El elemento especificado no existe."
+    }
+}
+
+
+
+function new {
+    Param(
+        [string]$Name,
+        [string]$Extension = $null
+    )
+
+    if (-not $Extension) {
+        # Si no se proporciona ninguna extensión, crear una carpeta
+        New-Item -ItemType Directory -Path (Join-Path -Path $PWD -ChildPath $Name)
+    } else {
+        # Si se proporciona una extensión, crear un archivo con esa extensión
+        $FileName = $Name + $Extension
+        $FilePath = Join-Path -Path $PWD -ChildPath $FileName
+        New-Item -ItemType File -Path $FilePath
+    }
+}
+
+
+
+function ff {    
+    Write-Output ''
+    $Archivos = Get-ChildItem
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+
+    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+function ffr.pdf {
+    Write-Output ''
+    $ArchivosPDF = Get-ChildItem | Where-Object { $_.Extension -eq ".pdf" } 
+    $CantidadArchivosPDF = $ArchivosPDF.Count
+
+    $ArchivosPDF | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de archivos PDF: $CantidadArchivosPDF"
+    Write-Output ''
+}
+
+function ffr.folder {
+    Write-Output ''
+    $Carpetas = Get-ChildItem | Where-Object { $_.PSIsContainer -eq $true }
+    $CantidadCarpetas = $Carpetas.Count
+
+    $Carpetas | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+
+function ffr {    
+    Write-Output ''
+    $Archivos = Get-ChildItem | Sort-Object LastWriteTime
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+
+    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+function ffr.pdf {
+    Write-Output ''
+    $ArchivosPDF = Get-ChildItem | Where-Object { $_.Extension -eq ".pdf" } | Sort-Object LastWriteTime
+    $CantidadArchivosPDF = $ArchivosPDF.Count
+
+    $ArchivosPDF | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de archivos PDF: $CantidadArchivosPDF"
+    Write-Output ''
+}
+
+function ffr.folder {
+    Write-Output ''
+    $Carpetas = Get-ChildItem | Where-Object { $_.PSIsContainer -eq $true } | Sort-Object LastWriteTime
+    $CantidadCarpetas = $Carpetas.Count
+
+    $Carpetas | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+
+
+
+
+function e {
+    explorer.exe .
+    Write-Output ''
+}
+
+#dont use this, oo is to far from left hand
+function oo {
+    param(
+        [string]$RutaArchivo
+    )
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    Start-Process -FilePath $RutaCompleta
+}
+
+function qq {
+    param(
+        [string]$RutaArchivo
+    )
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    Start-Process -FilePath $RutaCompleta
+}
+
+
+#donde use windows photos application, hard to configure, impossible, install honeyview from #bandisoft.com
+function qim {
+    param(
+        [string]$RutaArchivo,
+        [string]$Programa
+    )
+
+    # Comprobamos si el archivo existe antes de proceder
+    if (-Not (Test-Path $RutaArchivo)) {
+        Write-Output "El archivo no existe en la ruta proporcionada: $RutaArchivo"
+        return
+    }
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    switch ($Programa) {
+        "paint" {
+            Start-Process "mspaint.exe" -ArgumentList "`"$RutaCompleta`""
+        }
+        "ho" {
+            # Usando el path específico al ejecutable de Honeyview
+            $HoneyviewPath = "D:\Honeyview\Honeyview.exe"
+            Start-Process $HoneyviewPath -ArgumentList "`"$RutaCompleta`""
+        }
+        default {
+            Write-Output "Programa no reconocido. Por favor, elige 'Paint' o 'Honeyview'."
+            return
+        }
+    }
+}
+
+function qim2 {
+    param(
+        [string]$RutaArchivo,
+        [string]$Programa
+    )
+
+    # Comprobamos si el archivo existe antes de proceder
+    if (-Not (Test-Path $RutaArchivo)) {
+        Write-Output "El archivo no existe en la ruta proporcionada: $RutaArchivo"
+        return
+    }
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    switch ($Programa) {
+        "Paint" {
+            # Lanzar Paint directamente con el archivo
+            Start-Process "mspaint.exe" -ArgumentList "`"$RutaCompleta`""
+        }
+         "Fotos" {
+            # Corrigiendo el método para abrir con la app Fotos
+            $App = Get-AppxPackage -AllUsers | Where-Object { $_.Name -like "*Photos*" }
+            if ($App) {
+                $AppId = "$($App.PackageFamilyName)!App"
+                Start-Process "shell:appsFolder\$AppId" -ArgumentList "`"$RutaCompleta`""
+            } else {
+                Write-Output "No se pudo encontrar la aplicación Fotos. Asegúrate de que esté instalada."
+            }
+        }
+        default {
+            Write-Output "Programa no reconocido. Por favor, elige 'Paint' o 'Fotos'."
+            return
+        }
+    }
+}
+
+function qim3 {
+    param(
+        [string]$RutaArchivo,
+        [string]$Programa
+    )
+
+    # Comprobamos si el archivo existe antes de proceder
+    if (-Not (Test-Path $RutaArchivo)) {
+        Write-Output "El archivo no existe en la ruta proporcionada: $RutaArchivo"
+        return
+    }
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    switch ($Programa) {
+        "Paint" {
+            Start-Process "mspaint.exe" -ArgumentList "`"$RutaCompleta`""
+        }
+        "Fotos" {
+            # Solo buscamos en los paquetes del usuario actual
+            $App = Get-AppxPackage | Where-Object { $_.Name -like "*Photos*" }
+            if ($App) {
+                $AppId = "$($App.PackageFamilyName)!App"
+                Start-Process "explorer.exe" -ArgumentList "`"shell:appsFolder\$AppId `"$RutaCompleta`"`""
+            } else {
+                Write-Output "No se pudo encontrar la aplicación Fotos. Asegúrate de que esté instalada."
+            }
+        }
+        default {
+            Write-Output "Programa no reconocido. Por favor, elige 'Paint' o 'Fotos'."
+            return
+        }
+    }
+}
+
+
+
+function pl {
+    param(
+        [string]$Titulo = "Nueva ventana de PowerShell"
+    )
+
+    $Process = Start-Process powershell -WorkingDirectory $PWD.Path -PassThru
+    $Process.WaitForInputIdle()
+    $MainWindow = $Process.MainWindowHandle
+    $Win32ShowWindowAsync = Add-Type -MemberDefinition @"
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+"@ -Name "Win32ShowWindowAsync" -Namespace Win32Functions -PassThru
+    [Win32Functions.Win32ShowWindowAsync]::ShowWindowAsync($MainWindow, 2) | Out-Null
+    [Win32Functions.Win32ShowWindowAsync]::SetForegroundWindow($MainWindow) | Out-Null
+}
+
+function dw{
+    Set-Location "D:\Proyectos\Electrifier_Wifi"
+    ff
+}
+
+function dg{
+    Set-Location "D:\Proyectos\Electrificador_Gan"
+    ff
+}
+
+function dr{
+    Set-Location "D:\Proyectos\Libraries"
+    ff
+}
+
+function cc{
+    Set-Location "D:\OneDrive\Mov\dentro1\dentro2\dentro3\CySed_&Dict\dentro2 CumpleMio\dentro4 Inicio COmpatible"
+    ff
+}
+
+function ci{
+    Set-Location "D:\OneDrive\Mov\dentro1\dentro2\dentro3\CySed_&Dict\Inicio_AntiIncompatible_Informarte"
+    ff
+}
+
+function ca{
+    Set-Location "D:\OneDrive\Mov\cya"
+    ff
+}
+
+function wd{
+    Set-Location "D:\OneDrive\Mov"
+    ff
+}
+
+function dd{
+    Set-Location "D:\ADescargas"
+    ff
+}
+
+function ddd{
+    Set-Location "D:\"
+    ff
+}
+
+function ccc{
+    Set-Location "C:\"
+    ff
+}
+
+function cdf {
+    param([string]$Ubicacion)
+    Set-Location $Ubicacion
+    ff
+}
+
+function cds {
+    param([string]$Ubicacion)
+    Set-Location ..
+    ff
+}
+
+# ACCESOS DIRECTOS
+
+function edge {
+    Start-Process "msedge.exe"
+}
+
+function calcu {
+    Start-Process "calc.exe"
+}
+
+function github{
+    Start-Process "msedge.exe" -ArgumentList "https://github.com"
+}
+
+function aimp {
+    Start-Process "D:\AIMP\AIMP.exe" # Asegúrate de ajustar la ruta si AIMP está instalado en un directorio diferente.
+}
+
+function youtube {
+    Start-Process "msedge.exe" -ArgumentList "https://www.youtube.com"
+}
+
+function gmail {
+    Start-Process "msedge.exe" -ArgumentList "https://mail.google.com"
+}
+
+function gpt {
+    Start-Process "msedge.exe" -ArgumentList "https://chat.openai.com/chat"
+}
+
+function udemy {
+    Start-Process "msedge.exe" -ArgumentList "https://www.udemy.com"
+}

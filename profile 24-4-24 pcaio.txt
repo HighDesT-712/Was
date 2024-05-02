@@ -1,0 +1,312 @@
+function pp {
+    notepad $PROFILE
+}
+
+function upgrade{
+    . $PROFILE
+}
+
+
+function se {
+    param (
+        [Parameter(Mandatory=$true, Position=0)]
+        [string]$Word
+    )
+
+    # Buscar la palabra en archivos de la carpeta actual y sus subcarpetas de forma recursiva
+    $filesWithWord = Get-ChildItem -Path .\ -File -Recurse | Where-Object { (Get-Content $_.FullName) -match $Word }
+
+    # Mostrar los archivos que contienen la palabra buscada
+    $filesWithWord
+}
+
+
+function lnk{
+
+    # Ruta de la carpeta actual
+    $FolderPath = $PWD.Path
+
+    # Obtener todos los archivos con la extensión ".kicad_sym" en la carpeta actual y sus subcarpetas de forma recursiva
+    $kicadSymFiles = Get-ChildItem -Path $FolderPath -Filter *.kicad_sym -Recurse
+
+    # Crear accesos directos para cada archivo
+    foreach ($file in $kicadSymFiles) {
+        # Ruta completa del archivo de destino
+        $targetFilePath = $file.FullName
+        
+        # Ruta para el archivo de acceso directo
+        $shortcutFilePath = Join-Path -Path $FolderPath -ChildPath ($file.BaseName + '.lnk')
+
+        # Crear el acceso directo
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcut = $shell.CreateShortcut($shortcutFilePath)
+        $shortcut.TargetPath = $targetFilePath
+        $shortcut.Save()
+    }
+
+    # Obtener todos los accesos directos creados
+    $shortcuts = Get-ChildItem -Path $FolderPath -Filter *.lnk -Recurse
+
+    # Mover todos los accesos directos creados a la ubicación actual
+    foreach ($shortcut in $shortcuts) {
+        $shortcutFullName = $shortcut.FullName
+        Move-Item -Path $shortcutFullName -Destination ".\" -Force
+    }
+}
+
+
+function lnk2 {
+
+    # Ruta de la carpeta padre
+    $FolderPath = $PWD.Path
+
+    # Obtener todos los archivos con la extensión ".kicad_sym" en la carpeta padre y sus subcarpetas de forma recursiva
+    $kicadSymFiles = Get-ChildItem -Path $FolderPath -Filter *.kicad_sym -Recurse
+
+    # Crear accesos directos para cada archivo
+    foreach ($file in $kicadSymFiles) {
+        # Ruta completa del archivo de destino
+        $targetFilePath = $file.FullName
+        
+        # Ruta para el archivo de acceso directo
+        $shortcutFilePath = Join-Path -Path $FolderPath -ChildPath ($file.BaseName + '.lnk')
+
+        # Crear el acceso directo
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcut = $shell.CreateShortcut($shortcutFilePath)
+        $shortcut.TargetPath = $targetFilePath
+        $shortcut.Save()
+    }
+
+    # Mover todos los accesos directos creados a la ubicación actual
+    Move-Item -Path "$FolderPath\*\*.lnk" -Destination ".\"
+}
+
+
+# Función para eliminar un archivo o carpeta
+function delete {
+    Param(
+        [string]$Name
+    )
+
+    # Verificar si el elemento a eliminar es un archivo o una carpeta
+    if (Test-Path $Name -PathType Leaf) {
+        # Si es un archivo, eliminarlo
+        Remove-Item -Path $Name -Force
+    } elseif (Test-Path $Name -PathType Container) {
+        # Si es una carpeta, eliminarla
+        Remove-Item -Path $Name -Recurse -Force
+    } else {
+        Write-Host "El elemento especificado no existe."
+    }
+}
+
+
+# Si NOse proporciona una extensión como .txt, SE CREA UNA CARPETA.
+# Función para crear un archivo de texto (.txt) o una carpeta
+
+function new {
+    Param(
+        [string]$Name,
+        [string]$Extension = $null
+    )
+
+    if (-not $Extension) {
+        # Si no se proporciona ninguna extensión, crear una carpeta
+        New-Item -ItemType Directory -Path (Join-Path -Path $PWD -ChildPath $Name)
+    } else {
+        # Si se proporciona una extensión, crear un archivo con esa extensión
+        $FileName = $Name + $Extension
+        $FilePath = Join-Path -Path $PWD -ChildPath $FileName
+        New-Item -ItemType File -Path $FilePath
+    }
+}
+
+
+
+function ff {    
+    Write-Output ''
+    $Archivos = Get-ChildItem
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+
+    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+function ff.pdf {
+    Write-Output ''
+    $ArchivosPDF = Get-ChildItem | Where-Object { $_.Extension -eq ".pdf" } 
+    $CantidadArchivosPDF = $ArchivosPDF.Count
+
+    $ArchivosPDF | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de archivos PDF: $CantidadArchivosPDF"
+    Write-Output ''
+}
+
+function ff.folder {
+    Write-Output ''
+    $Carpetas = Get-ChildItem | Where-Object { $_.PSIsContainer -eq $true }
+    $CantidadCarpetas = $Carpetas.Count
+
+    $Carpetas | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+
+function ffr {    
+    Write-Output ''
+    $Archivos = Get-ChildItem | Sort-Object LastWriteTime
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+
+    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+function ffr.pdf {
+    Write-Output ''
+    $ArchivosPDF = Get-ChildItem | Where-Object { $_.Extension -eq ".pdf" } | Sort-Object LastWriteTime
+    $CantidadArchivosPDF = $ArchivosPDF.Count
+
+    $ArchivosPDF | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de archivos PDF: $CantidadArchivosPDF"
+    Write-Output ''
+}
+
+function ffr.folder {
+    Write-Output ''
+    $Carpetas = Get-ChildItem | Where-Object { $_.PSIsContainer -eq $true } | Sort-Object LastWriteTime
+    $CantidadCarpetas = $Carpetas.Count
+
+    $Carpetas | ForEach-Object { "{0,-30} {1}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime }
+
+    Write-Output ''
+    Write-Output "Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+
+
+
+
+function e {
+    explorer.exe .
+    Write-Output ''
+}
+
+function oo {
+    param(
+        [string]$RutaArchivo
+    )
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    Start-Process -FilePath $RutaCompleta
+}
+
+function qq {
+    param(
+        [string]$RutaArchivo
+    )
+
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    Start-Process -FilePath $RutaCompleta
+}
+
+
+
+function pl {
+    param(
+        [string]$Titulo = "Nueva ventana de PowerShell"
+    )
+
+    $Process = Start-Process powershell -WorkingDirectory $PWD.Path -PassThru
+    $Process.WaitForInputIdle()
+    $MainWindow = $Process.MainWindowHandle
+    $Win32ShowWindowAsync = Add-Type -MemberDefinition @"
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+"@ -Name "Win32ShowWindowAsync" -Namespace Win32Functions -PassThru
+    [Win32Functions.Win32ShowWindowAsync]::ShowWindowAsync($MainWindow, 2) | Out-Null
+    [Win32Functions.Win32ShowWindowAsync]::SetForegroundWindow($MainWindow) | Out-Null
+}
+
+
+function csc{
+    Set-Location "D:\OneDrive\Mov\dentro1\dentro2\dentro3\CySed_&Dict\dentro2 CumpleMio\dentro4 Inicio COmpatible"
+}
+
+function csi{
+    Set-Location "D:\OneDrive\Mov\dentro1\dentro2\dentro3\CySed_&Dict\Inicio_AntiIncompatible_Informarte"
+}
+
+
+function wd{
+    Set-Location "D:\OneDrive\Mov"
+}
+
+function dd{
+    Set-Location "D:\ADescargas"
+}
+
+function ddd{
+    Set-Location "D:\"
+}
+
+function cc{
+    Set-Location "C:\"
+}
+
+function dp{
+    Set-Location "D:\Proyectos"
+}
+
+function dg{
+    Set-Location "D:\Proyectos\Electrificador_Ganadero"
+}
+
+function dw{
+    Set-Location "D:\Proyectos\Electrificador_Wifi"
+}
+
+function dlib{
+    Set-Location "D:\Proyectos\Libraries"
+}
+
+function dw.code{
+    Set-Location "D:\Proyectos\Electrificador_Wifi\firmware\arduino_PIO"
+}
+
+function dw.pcb{
+    Set-Location "D:\Proyectos\Electrificador_Wifi\pcb\EL01C-L-2023-12-29_ESP32-C3"
+}
+
+function dg.code{
+    Set-Location "D:\Proyectos\Electrificador_Ganadero\firmware\PIO"
+}
+
+function dg.pcb{
+    Set-Location "D:\Proyectos\Electrificador_Ganadero\pcb\ELG01"
+}
+
+function cs{
+    Set-Location "D:\OneDrive\Mov\dentro1\dentro2\dentro3\CySed_&Dict"
+}
+
+

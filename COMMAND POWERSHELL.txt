@@ -1,0 +1,6 @@
+ profile.update . paciodest
+
+donde pcaiodest tu eliges ese texto que quieres que tenga
+
+. es la ubicación donde se generara el archivo que contenga 
+tu $profile content actual de esta pc

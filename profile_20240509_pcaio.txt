@@ -2,6 +2,8 @@ function pp {
     notepad $PROFILE
 }
 
+
+
 function upgrade{
     . $PROFILE
 }
@@ -19,11 +21,11 @@ function fff {
     $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
 
     Write-Output ''
-    Write-Output "Cantidad de archivos con la extensiÇÎÇ¬n '.$Extension': $CantidadArchivos"
+    Write-Output "Cantidad de archivos con la extensiÇün '.$Extension': $CantidadArchivos"
     Write-Output ''
 }
 
-function lnk {
+function file.lnk {
     param(
         [string]$Url,
         [string]$NombreArchivo = "AccesoDirectoWeb"
@@ -36,7 +38,17 @@ function lnk {
     Write-Host "Acceso directo creado en: $ShortcutPath"
 }
 
-# Ejemplo de cÇÎÇ¬mo usar la funciÇÎÇ¬n:
+
+function url ($Enlace, $NombreArchivo) {
+    $archivoURL = "$PWD\$NombreArchivo.url"
+    $contenidoURL = "[InternetShortcut]`r`nURL=$Enlace"
+    $contenidoURL | Out-File -FilePath $archivoURL
+    ff
+}
+
+
+
+# Ejemplo de cÇümo usar la funciÇün:
 # CrearAccesoDirecto "https://ejemplo.com" "MiAccesoDirectoPersonalizado"
 
 function lnk.sym{
@@ -44,7 +56,7 @@ function lnk.sym{
     # Ruta de la carpeta actual
     $FolderPath = $PWD.Path
 
-    # Obtener todos los archivos con la extensiÇÎÇ¬n ".kicad_sym" en la carpeta actual y sus subcarpetas de forma recursiva
+    # Obtener todos los archivos con la extensiÇün ".kicad_sym" en la carpeta actual y sus subcarpetas de forma recursiva
     $kicadSymFiles = Get-ChildItem -Path $FolderPath -Filter *.kicad_sym -Recurse
 
     # Crear accesos directos para cada archivo
@@ -65,7 +77,7 @@ function lnk.sym{
     # Obtener todos los accesos directos creados
     $shortcuts = Get-ChildItem -Path $FolderPath -Filter *.lnk -Recurse
 
-    # Mover todos los accesos directos creados a la ubicaciÇÎÇ¬n actual
+    # Mover todos los accesos directos creados a la ubicaciÇün actual
     foreach ($shortcut in $shortcuts) {
         $shortcutFullName = $shortcut.FullName
         Move-Item -Path $shortcutFullName -Destination ".\" -Force
@@ -76,7 +88,7 @@ function lnk.mod {
     # Ruta de la carpeta actual
     $FolderPath = $PWD.Path
 
-    # Obtener todos los archivos con la extensiÇÎÇ¬n ".kicad_mod" en la carpeta actual y sus subcarpetas de forma recursiva
+    # Obtener todos los archivos con la extensiÇün ".kicad_mod" en la carpeta actual y sus subcarpetas de forma recursiva
     $kicadModFiles = Get-ChildItem -Path $FolderPath -Filter *.kicad_mod -Recurse
 
     # Crear accesos directos para la carpeta de cada archivo
@@ -97,14 +109,12 @@ function lnk.mod {
     # Obtener todos los accesos directos creados
     $shortcuts = Get-ChildItem -Path $FolderPath -Filter *.lnk -Recurse
 
-    # Mover todos los accesos directos creados a la ubicaciÇÎÇ¬n actual
+    # Mover todos los accesos directos creados a la ubicaciÇün actual
     foreach ($shortcut in $shortcuts) {
         $shortcutFullName = $shortcut.FullName
         Move-Item -Path $shortcutFullName -Destination ".\" -Force
     }
 }
-
-
 
 #not working
 function lnk2.pcb {
@@ -112,7 +122,7 @@ function lnk2.pcb {
     # Ruta de la carpeta padre
     $FolderPath = $PWD.Path
 
-    # Obtener todos los archivos con la extensiÇÎÇ¬n ".kicad_sym" en la carpeta padre y sus subcarpetas de forma recursiva
+    # Obtener todos los archivos con la extensiÇün ".kicad_sym" en la carpeta padre y sus subcarpetas de forma recursiva
     $kicadSymFiles = Get-ChildItem -Path $FolderPath -Filter *.kicad_sym -Recurse
 
     # Crear accesos directos para cada archivo
@@ -130,7 +140,7 @@ function lnk2.pcb {
         $shortcut.Save()
     }
 
-    # Mover todos los accesos directos creados a la ubicaciÇÎÇ¬n actual
+    # Mover todos los accesos directos creados a la ubicaciÇün actual
     Move-Item -Path "$FolderPath\*\*.lnk" -Destination ".\"
 }
 
@@ -148,14 +158,41 @@ function xsx{
     Invoke-Item $rutaCompleta
 }
 
+# FunciÇün para renombrar un archivo
+function rename {
+    param (
+        [string]$NombreActual,
+        [string]$NuevoNombre
+    )
 
+    if (-not $NombreActual) {
+        Write-Output "Por favor especifica el nombre actual del archivo que deseas renombrar."
+        return
+    }
 
+    if (-not $NuevoNombre) {
+        Write-Output "Por favor especifica el nuevo nombre para el archivo."
+        return
+    }
 
+    $RutaArchivo = Join-Path -Path $pwd.Path -ChildPath $NombreActual
+
+    if (Test-Path $RutaArchivo -PathType Leaf) {
+        # Construir la ruta completa para el nuevo nombre
+        $NuevaRutaArchivo = Join-Path -Path $pwd.Path -ChildPath $NuevoNombre
+
+        # Renombrar el archivo utilizando Rename-Item
+        Rename-Item -Path $RutaArchivo -NewName $NuevoNombre -Force
+        Write-Output "Se ha renombrado el archivo '$NombreActual' como '$NuevoNombre'."
+    } else {
+        Write-Output "El archivo '$NombreActual' no existe en la ubicaciÇün actual o no es un archivo vÇ­lido."
+    }
+}
 
 # COPY, PASTE, CUT
-# Variable global para almacenar la ÇÎ¶õltima ubicaciÇÎÇ¬n del archivo cortado (movido)
+# Variable global para almacenar la Ç§ltima ubicaciÇün del archivo cortado (movido)
 $global:LastCutItemLocation = $null
-# FunciÇÎÇ¬n para realizar un duplicado (con nombre modificado) de un archivo o carpeta en una ubicaciÇÎÇ¬n especÇÎÇøfica
+# FunciÇün para realizar un duplicado (con nombre modificado) de un archivo o carpeta en una ubicaciÇün especÇðfica
 function copy {
     param (
         [string]$NombreElemento,
@@ -168,7 +205,7 @@ function copy {
     }
 
     if (-not $NuevoNombre) {
-        # Obtener el nombre base y la extensiÇÎÇ¬n del archivo o carpeta
+        # Obtener el nombre base y la extensiÇün del archivo o carpeta
         $NombreBase = [System.IO.Path]::GetFileNameWithoutExtension($NombreElemento)
         $Extension = [System.IO.Path]::GetExtension($NombreElemento)
 
@@ -179,51 +216,49 @@ function copy {
     $Origen = Join-Path -Path $pwd.Path -ChildPath $NombreElemento
 
     if (Test-Path $Origen) {
-        # Definir la ubicaciÇÎÇ¬n de destino para el duplicado en D:\buffertemporal con el nuevo nombre
+        # Definir la ubicaciÇün de destino para el duplicado en D:\buffertemporal con el nuevo nombre
         $Destino = Join-Path -Path "D:\buffertemporal" -ChildPath $NuevoNombre
 
-        # Copiar el archivo o carpeta a la ubicaciÇÎÇ¬n de destino con el nuevo nombre
+        # Copiar el archivo o carpeta a la ubicaciÇün de destino con el nuevo nombre
         Copy-Item -Path $Origen -Destination $Destino -Recurse
-        Write-Output "Se ha realizado un duplicado de '$NombreElemento' como '$NuevoNombre' en la ubicaciÇÎÇ¬n '$Destino'."
+        Write-Output "Se ha realizado un duplicado de '$NombreElemento' como '$NuevoNombre' en la ubicaciÇün '$Destino'."
     } else {
-        Write-Output "El archivo o carpeta '$NombreElemento' no existe en la ubicaciÇÎÇ¬n actual."
+        Write-Output "El archivo o carpeta '$NombreElemento' no existe en la ubicaciÇün actual."
     }
 }
 
-
-
-# FunciÇÎÇ¬n para cortar (mover) un archivo desde la ubicaciÇÎÇ¬n actual a una ubicaciÇÎÇ¬n especÇÎÇøfica
+# FunciÇün para cortar (mover) un archivo desde la ubicaciÇün actual a una ubicaciÇün especÇðfica
 function cut {
     param (
         [string]$NombreElemento
     )
 
     if (-not $NombreElemento) {
-        Write-Output "Por favor especifica el nombre del archivo o carpeta que deseas cortar (moviÇÎ¶÷ndolo)."
+        Write-Output "Por favor especifica el nombre del archivo o carpeta que deseas cortar (moviÇ¸ndolo)."
         return
     }
 
     $Origen = Join-Path -Path $pwd.Path -ChildPath $NombreElemento
 
     if (Test-Path $Origen) {
-        # Mover el archivo a la ubicaciÇÎÇ¬n especÇÎÇøfica para despuÇÎ¶÷s pegarlo con paste
+        # Mover el archivo a la ubicaciÇün especÇðfica para despuÇ¸s pegarlo con paste
         $Destino = Join-Path -Path "D:\buffertemporal" -ChildPath $NombreElemento
         Move-Item -Path $Origen -Destination $Destino -Force
-        $global:LastCutItemLocation = $Destino  # Almacenar la ubicaciÇÎÇ¬n del archivo cortado
-        Write-Output "Se ha cortado (movido) '$NombreElemento' a la ubicaciÇÎÇ¬n '$Destino'."
+        $global:LastCutItemLocation = $Destino  # Almacenar la ubicaciÇün del archivo cortado
+        Write-Output "Se ha cortado (movido) '$NombreElemento' a la ubicaciÇün '$Destino'."
     } else {
-        Write-Output "El archivo o carpeta '$NombreElemento' no existe en la ubicaciÇÎÇ¬n actual."
+        Write-Output "El archivo o carpeta '$NombreElemento' no existe en la ubicaciÇün actual."
     }
 }
 
-# FunciÇÎÇ¬n para pegar el archivo cortado desde una ubicaciÇÎÇ¬n especÇÎÇøfica a otra ubicaciÇÎÇ¬n
+# FunciÇün para pegar el archivo cortado desde una ubicaciÇün especÇðfica a otra ubicaciÇün
 function paste {
     param (
         [string]$Destino
     )
 
     if (-not $Destino) {
-        Write-Output "Por favor especifica la ubicaciÇÎÇ¬n de destino donde deseas pegar el archivo."
+        Write-Output "Por favor especifica la ubicaciÇün de destino donde deseas pegar el archivo."
         return
     }
 
@@ -236,16 +271,14 @@ function paste {
     $NombreElemento = [System.IO.Path]::GetFileName($global:LastCutItemLocation)
     $DestinoCompleto = Join-Path -Path $Destino -ChildPath $NombreElemento
 
-    # Pegar el archivo cortado en la ubicaciÇÎÇ¬n de destino
+    # Pegar el archivo cortado en la ubicaciÇün de destino
     Move-Item -Path $global:LastCutItemLocation -Destination $DestinoCompleto -Force
-    $global:LastCutItemLocation = $null  # Limpiar la variable despuÇÎ¶÷s de pegar
-    Write-Output "Se ha pegado el archivo '$NombreElemento' en la ubicaciÇÎÇ¬n '$Destino'."
+    $global:LastCutItemLocation = $null  # Limpiar la variable despuÇ¸s de pegar
+    Write-Output "Se ha pegado el archivo '$NombreElemento' en la ubicaciÇün '$Destino'."
 }
 
 
-
-
-# FunciÇÎÇ¬n para eliminar un archivo o carpeta
+# FunciÇün para eliminar un archivo o carpeta
 function delete {
     Param(
         [string]$Name
@@ -273,10 +306,10 @@ function new {
     )
 
     if (-not $Extension) {
-        # Si no se proporciona ninguna extensiÇÎÇ¬n, crear una carpeta
+        # Si no se proporciona ninguna extensiÇün, crear una carpeta
         New-Item -ItemType Directory -Path (Join-Path -Path $PWD -ChildPath $Name)
     } else {
-        # Si se proporciona una extensiÇÎÇ¬n, crear un archivo con esa extensiÇÎÇ¬n
+        # Si se proporciona una extensiÇün, crear un archivo con esa extensiÇün
         $FileName = $Name + $Extension
         $FilePath = Join-Path -Path $PWD -ChildPath $FileName
         New-Item -ItemType File -Path $FilePath
@@ -304,6 +337,63 @@ function ff {
     Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
     Write-Output ''
 }
+
+
+function ffn {
+    Write-Output ''
+    $Archivos = Get-ChildItem
+    $i = 1
+
+    $Archivos | ForEach-Object {
+        $nameDisplay = $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30))
+        $dateDisplay = $_.LastWriteTime
+        $extensionDisplay = $_.Extension
+
+        if ($_.PSIsContainer) {
+            Write-Host ("{0,-5} {1,-30} {2} {3} {4}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay) -BackgroundColor Yellow -ForegroundColor Black
+        } else {
+            Write-Output ("{0,-5} {1,-30} {2} {3} {4}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay)
+        }
+        $i++
+    }
+    
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+function ffnd {
+    Write-Output ''
+    $Archivos = Get-ChildItem
+    $i = 1
+
+    $Archivos | ForEach-Object {
+        $nameDisplay = $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30))
+        $dateDisplay = $_.LastWriteTime.ToString("yyyy MM dd HH mm ss")
+        $extensionDisplay = $_.Extension -replace '^\.' # Remueve el punto inicial en la extensiÇün para limpiar la salida
+
+        if ($_.PSIsContainer) {
+            Write-Host ("{0,-5} {1,-30} {2,-20} {3,-10}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay) -BackgroundColor Yellow -ForegroundColor Black
+        } else {
+            Write-Output ("{0,-5} {1,-30} {2,-20} {3,-10}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay)
+        }
+        $i++
+    }
+    
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+
+
+
 
 #en camino a ser la definitiva funcion ffn
 function ffn {
@@ -353,8 +443,6 @@ function ffc {
     Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
     Write-Output ''
 }
-
-
 
 
 function ffr.pdf {
@@ -467,7 +555,7 @@ function qim {
             Start-Process "mspaint.exe" -ArgumentList "`"$RutaCompleta`""
         }
         "ho" {
-            # Usando el path especÇÎÇøfico al ejecutable de Honeyview
+            # Usando el path especÇðfico al ejecutable de Honeyview
             $HoneyviewPath = "D:\Honeyview\Honeyview.exe"
             Start-Process $HoneyviewPath -ArgumentList "`"$RutaCompleta`""
         }
@@ -497,13 +585,13 @@ function qim2 {
             Start-Process "mspaint.exe" -ArgumentList "`"$RutaCompleta`""
         }
          "Fotos" {
-            # Corrigiendo el mÇÎ¶÷todo para abrir con la app Fotos
+            # Corrigiendo el mÇ¸todo para abrir con la app Fotos
             $App = Get-AppxPackage -AllUsers | Where-Object { $_.Name -like "*Photos*" }
             if ($App) {
                 $AppId = "$($App.PackageFamilyName)!App"
                 Start-Process "shell:appsFolder\$AppId" -ArgumentList "`"$RutaCompleta`""
             } else {
-                Write-Output "No se pudo encontrar la aplicaciÇÎÇ¬n Fotos. AsegÇÎ¶õrate de que estÇÎ¶÷ instalada."
+                Write-Output "No se pudo encontrar la aplicaciÇün Fotos. AsegÇ§rate de que estÇ¸ instalada."
             }
         }
         default {
@@ -537,7 +625,7 @@ function qim3 {
                 $AppId = "$($App.PackageFamilyName)!App"
                 Start-Process "explorer.exe" -ArgumentList "`"shell:appsFolder\$AppId `"$RutaCompleta`"`""
             } else {
-                Write-Output "No se pudo encontrar la aplicaciÇÎÇ¬n Fotos. AsegÇÎ¶õrate de que estÇÎ¶÷ instalada."
+                Write-Output "No se pudo encontrar la aplicaciÇün Fotos. AsegÇ§rate de que estÇ¸ instalada."
             }
         }
         default {
@@ -553,14 +641,14 @@ function pl {
         [string]$Titulo = "Nueva ventana de PowerShell"
     )
 
-    # Inicia un nuevo proceso de PowerShell con el tÇÎÇøtulo personalizado y mantiene la ventana abierta
+    # Inicia un nuevo proceso de PowerShell con el tÇðtulo personalizado y mantiene la ventana abierta
     $Process = Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$host.UI.RawUI.WindowTitle = '$Titulo'" -WorkingDirectory $PWD.Path -PassThru
 
     try {
-        # Espera hasta que el proceso estÇÎ¶÷ listo para recibir entrada, maneja la excepciÇÎÇ¬n si falla
+        # Espera hasta que el proceso estÇ¸ listo para recibir entrada, maneja la excepciÇün si falla
         $Process.WaitForInputIdle()
     } catch {
-        Write-Host "El proceso no tiene una interfaz grÇÎ¶ðfica, o no estÇÎ¶ð respondiendo a WaitForInputIdle."
+        Write-Host "El proceso no tiene una interfaz grÇ­fica, o no estÇ­ respondiendo a WaitForInputIdle."
     }
 
     # Agrega las definiciones necesarias para manipular la ventana
@@ -572,9 +660,9 @@ function pl {
     public static extern bool SetForegroundWindow(IntPtr hWnd);
 "@ -Name "Win32ShowWindowAsync" -Namespace Win32Functions -PassThru
 
-    # Intenta asegurarse de que la ventana estÇÎ¶÷ en modo normal (activa y al frente)
+    # Intenta asegurarse de que la ventana estÇ¸ en modo normal (activa y al frente)
     [Win32Functions.Win32ShowWindowAsync]::ShowWindowAsync($Process.MainWindowHandle, 1) | Out-Null
-    Start-Sleep -Seconds 1  # PequeÇÎÇña pausa para asegurar que la ventana estÇÎ¶÷ lista
+    Start-Sleep -Seconds 1  # PequeÇña pausa para asegurar que la ventana estÇ¸ lista
     [Win32Functions.Win32ShowWindowAsync]::SetForegroundWindow($Process.MainWindowHandle) | Out-Null
 }
 
@@ -611,7 +699,7 @@ function gopl {
             if ($process.MainWindowHandle -ne 0) {
                 [WindowHandling]::ShowWindowAsync($process.MainWindowHandle, 1) # 1 = SW_SHOWNORMAL
                 [WindowHandling]::SetForegroundWindow($process.MainWindowHandle)
-                Write-Host "TraÇÎÇøda al frente: $($process.MainWindowTitle)"
+                Write-Host "TraÇðda al frente: $($process.MainWindowTitle)"
             } else {
                 Write-Host "PID: $($process.Id) - no tiene una ventana principal visible."
             }
@@ -648,7 +736,7 @@ function closepl {
                 $process.CloseMainWindow()
                 $process.WaitForExit(2000) # Espera hasta 2000 milisegundos para el cierre
                 if (!$process.HasExited) {
-                    $process.Kill() # Fuerza el cierre si no se ha cerrado aÇÎ¶õn
+                    $process.Kill() # Fuerza el cierre si no se ha cerrado aÇ§n
                 }
                 Write-Host "Cerrado: $($process.Id)"
             } catch {
@@ -671,14 +759,14 @@ function closeplid {
                     $process.CloseMainWindow()
                     $process.WaitForExit(2000) # Espera hasta 2000 milisegundos para el cierre
                     if (!$process.HasExited) {
-                        $process.Kill() # Fuerza el cierre si no se ha cerrado aÇÎ¶õn
+                        $process.Kill() # Fuerza el cierre si no se ha cerrado aÇ§n
                     }
                     Write-Host "Cerrado: $($process.Id)"
                 } catch {
                     Write-Host "Error al cerrar el proceso: $($process.Id)"
                 }
             } else {
-                Write-Host "No se cerrarÇÎ¶ð la ventana actual desde la que se estÇÎ¶ð ejecutando el comando."
+                Write-Host "No se cerrarÇ­ la ventana actual desde la que se estÇ­ ejecutando el comando."
             }
         }
 
@@ -700,8 +788,8 @@ function closeall {
         $null = Add-Type -AssemblyName Microsoft.VisualBasic
         $null = Add-Type -AssemblyName System.Windows.Forms
         [Microsoft.VisualBasic.Interaction]::AppActivate($proc.Id)
-        [System.Windows.Forms.SendKeys]::SendWait("%{F4}")  # EnvÇÎÇøa ALT+F4 a la ventana activa
-        Start-Sleep -Milliseconds 100  # PequeÇÎÇña pausa para permitir que el mensaje se procese
+        [System.Windows.Forms.SendKeys]::SendWait("%{F4}")  # EnvÇða ALT+F4 a la ventana activa
+        Start-Sleep -Milliseconds 100  # PequeÇña pausa para permitir que el mensaje se procese
     }
 }
 
@@ -715,7 +803,7 @@ function goo {
     )
     $processes = Get-Process | Where-Object {$_.MainWindowTitle -ne ""} | Select-Object MainWindowTitle, MainWindowHandle
     if ($index -le 0 -or $index -gt $processes.Count) {
-        Write-Host "ÇÎ?ndice fuera de rango."
+        Write-Host "Ç?ndice fuera de rango."
         return
     }
     $selectedProcess = $processes[$index - 1]
@@ -724,7 +812,7 @@ function goo {
         [WindowHandling]::ShowWindowAsync($windowHandle, 1)
         [WindowHandling]::SetForegroundWindow($windowHandle)
     } else {
-        Write-Host "No se encontrÇÎÇ¬ una ventana con el ÇÎÇøndice: $index"
+        Write-Host "No se encontrÇü una ventana con el Çðndice: $index"
     }
 }
 
@@ -747,13 +835,42 @@ function profile.update {
     # Ruta al script de Python
     $scriptPython = "D:\G\des\PC_Configs_y_Solus,_probs,_cell,_Programs\ProgramsANDExtensions\dentro4_Explorer3,_Music\Explorer3\Model\addprofInterface\main.py"
 
-    # Comando para ejecutar el script de Python con los parÇÎ¶ðmetros
+    # Comando para ejecutar el script de Python con los parÇ­metros
     $comandoPython = "python $scriptPython $ubicacion $nuevoTermino"
 
     # Ejecutar el comando
     Invoke-Expression $comandoPython
 }
 
+function re {
+    param (
+        [string]$NombreActual,
+        [string]$NuevoNombre
+    )
+
+    if (-not $NombreActual) {
+        Write-Output "Por favor especifica el nombre actual del archivo que deseas renombrar."
+        return
+    }
+
+    if (-not $NuevoNombre) {
+        Write-Output "Por favor especifica el nuevo nombre para el archivo."
+        return
+    }
+
+    $RutaArchivo = Join-Path -Path $pwd.Path -ChildPath $NombreActual
+
+    if (Test-Path $RutaArchivo -PathType Leaf) {
+        # Construir la ruta completa para el nuevo nombre
+        $NuevaRutaArchivo = Join-Path -Path $pwd.Path -ChildPath $NuevoNombre
+
+        # Renombrar el archivo utilizando Rename-Item
+        Rename-Item -Path $RutaArchivo -NewName $NuevoNombre -Force
+        Write-Output "Se ha renombrado el archivo '$NombreActual' como '$NuevoNombre'."
+    } else {
+        Write-Output "El archivo '$NombreActual' no existe en la ubicaciÇÎÇZÇÎ¶ªn actual o no es un archivo vÇÎÇZ¶ôÇølido."
+    }
+}
 
 
 function dw{
@@ -797,7 +914,10 @@ function dr{
     ff
 }
 
-
+function cc{
+    Set-Location "D:\G\des\dentro1\dentro2\dentro3\CySed_&Dict\dentro2 CumpleMio\dentro4 Inicio COmpatible"
+    ff
+}
 
 function ci{
     Set-Location "D:\G\des\dentro1\dentro2\dentro3\CySed_&Dict\Inicio_AntiIncompatible_Informarte"
@@ -809,7 +929,7 @@ function cac{
     ff
 }
 
-function cacc{
+function cac{
     Set-Location "D:\G\des\cya\cya2024"
     ff
 }
@@ -867,16 +987,17 @@ function gg.ow{
     ff
 }
 
-function dd{
-    Set-Location "D:\ADescargas"
-    ff
-}
+
 
 function ddd{
     Set-Location "D:\"
     ff
 }
 
+function ic{
+    Set-Location "D:\G\des\dentro1\dentro2\dentro3\CySed_&Dict\dentro2 CumpleMio\dentro4 Inicio COmpatible"
+    ff
+}
 
 
 
@@ -907,7 +1028,7 @@ function github{
 }
 
 function aimp {
-    Start-Process "D:\AIMP\AIMP.exe" # AsegÇÎ¶õrate de ajustar la ruta si AIMP estÇÎ¶ð instalado en un directorio diferente.
+    Start-Process "D:\AIMP\AIMP.exe" # AsegÇ§rate de ajustar la ruta si AIMP estÇ­ instalado en un directorio diferente.
 }
 
 function youtube {
@@ -949,7 +1070,7 @@ function venv.create {
     param (
         [string]$Path
     )
-    $batchPath = "D:\G\des\cya\aypprogs\primero1 Systems_IA_Interfaces\dentro2 Prog IA, Systems, Interfaces\VisualStudioCode\envcreate.bat"  # Ajusta esto a la ubicaciÇÎÇ¬n de tu archivo batch
+    $batchPath = "D:\G\des\cya\aypprogs\primero1 Systems_IA_Interfaces\dentro2 Prog IA, Systems, Interfaces\VisualStudioCode\envcreate.bat"  # Ajusta esto a la ubicaciÇün de tu archivo batch
     if (-Not (Test-Path $Path)) {
         Write-Error "La ruta especificada no existe"
         return
@@ -965,7 +1086,7 @@ function venv.activate {
     if (Test-Path $venvScriptPath) {
         & $venvScriptPath
     } else {
-        Write-Error "El script de activaciÇÎÇ¬n del entorno virtual no existe en la ruta proporcionada: $venvScriptPath"
+        Write-Error "El script de activaciÇün del entorno virtual no existe en la ruta proporcionada: $venvScriptPath"
     }
 }
 
@@ -976,7 +1097,27 @@ Write-Output "$sizeInMB MB"
 
 }
 
-# ------------------------------------------------------------------------
+function compartido{
+    Set-Location "C:\Users\Usuario\Documents\Compartido AIO"
+    ff
+}
+
+#---------------------------------------------------
+
+#se cambio el nombre a file.lnk en vez de lnk
+function file.lnk {
+    param(
+        [string]$Url,
+        [string]$NombreArchivo = "AccesoDirectoWeb"
+    )
+    $ShortcutPath = (Get-Location).Path + "\$NombreArchivo.lnk"
+    $WScriptShell = New-Object -ComObject WScript.Shell
+    $Shortcut = $WScriptShell.CreateShortcut($ShortcutPath)
+    $Shortcut.TargetPath = $Url
+    $Shortcut.Save()
+    Write-Host "Acceso directo creado en: $ShortcutPath"
+}
+
 
 function url ($Enlace, $NombreArchivo) {
     $archivoURL = "$PWD\$NombreArchivo.url"
@@ -985,56 +1126,85 @@ function url ($Enlace, $NombreArchivo) {
     ff
 }
 
-#ccc deleted
+function gexcel {
+    Start-Process "D:\G\des\Cuaderno_MINI-Puntos_a_aprovechar\cuadmini_puntos_por_aprovechar.gsheet"
+}
 
-function cc {
+# ------------------------------------------
+# change dd to ad
+function ad{
+    Set-Location "D:\ADescargas"
+    ff
+}
+
+#changed cc .put dd
+function dd {
     param([string]$Ubicacion)
     Set-Location $Ubicacion
     ff
 }
 
+# mantain dc for returning folder.
 function dc {
     param([string]$Ubicacion)
     Set-Location ..
     ff
 }
 
-function ic{
-    Set-Location "D:\G\des\dentro1\dentro2\dentro3\CySed_&Dict\dentro2 CumpleMio\dentro4 Inicio COmpatible"
-    ff
+# open $profiel in visual studio code, there i can Encapsualte the functions :) confirmed.!
+function ppv {
+    code $PROFILE
 }
 
-#se aÇñadio un ff a la funcion delete.
+function ffnd2 {
+    Write-Output ''
+    $Archivos = Get-ChildItem
+    $i = 1
 
-#se cambio de nombre de rename a re
-# FunciÇÎÇ¬n para renombrar un archivo
-function re {
-    param (
-        [string]$NombreActual,
-        [string]$NuevoNombre
-    )
+    $Archivos | ForEach-Object {
+        $nameDisplay = $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30))
+        $dateDisplay = $_.LastWriteTime.ToString("yyyyMMddHHmmss")  # Formato continuo sin espacios ni otros caracteres
+        $extensionDisplay = $_.Extension -replace '^\.'  # Remueve el punto inicial en la extensiÇün para limpiar la salida
 
-    if (-not $NombreActual) {
-        Write-Output "Por favor especifica el nombre actual del archivo que deseas renombrar."
-        return
+        if ($_.PSIsContainer) {
+            Write-Host ("{0,-5} {1,-30} {2,-14} {3,-10}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay) -BackgroundColor Yellow -ForegroundColor Black
+        } else {
+            Write-Output ("{0,-5} {1,-30} {2,-14} {3,-10}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay)
+        }
+        $i++
     }
+    
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
 
-    if (-not $NuevoNombre) {
-        Write-Output "Por favor especifica el nuevo nombre para el archivo."
-        return
-    }
+function dd2 ($number) {
+    $Archivos = Get-ChildItem
+    $directories = $Archivos | Where-Object { $_.PSIsContainer }  # Filtra solo directorios
 
-    $RutaArchivo = Join-Path -Path $pwd.Path -ChildPath $NombreActual
-
-    if (Test-Path $RutaArchivo -PathType Leaf) {
-        # Construir la ruta completa para el nuevo nombre
-        $NuevaRutaArchivo = Join-Path -Path $pwd.Path -ChildPath $NuevoNombre
-
-        # Renombrar el archivo utilizando Rename-Item
-        Rename-Item -Path $RutaArchivo -NewName $NuevoNombre -Force
-        Write-Output "Se ha renombrado el archivo '$NombreActual' como '$NuevoNombre'."
+    if ($number -le $directories.Count -and $number -gt 0) {
+        $directory = $directories[$number - 1].FullName
+        Set-Location $directory
+        Write-Output "Moved to: $directory"
     } else {
-        Write-Output "El archivo '$NombreActual' no existe en la ubicaciÇÎÇ¬n actual o no es un archivo vÇÎ¶ðlido."
+        Write-Output "Invalid number: The number must be within the range of listed directories."
+    }
+}
+
+function qq2 ($number) {
+    $Archivos = Get-ChildItem
+    $files = $Archivos | Where-Object { -not $_.PSIsContainer }  # Filtra solo archivos
+
+    if ($number -le $files.Count -and $number -gt 0) {
+        $file = $files[$number - 1].FullName
+        Start-Process -FilePath $file -NoNewWindow  # Abre el archivo con Start-Process
+        Write-Output "Opening file: $file"
+    } else {
+        Write-Output "Invalid number: The number must be within the range of listed files."
     }
 }
 

@@ -1,26 +1,18 @@
-function pp {
+function ppold {
     notepad $PROFILE
+}
+
+# open $profiel in visual studio code, there i canEncapsualtethefunctions:)confirmed.!
+function pp {
+    code $PROFILE
 }
 
 function upgrade{
     . $PROFILE
 }
 
-
-function fff {
-    param(
-        [string]$Extension
-    )
-
-    Write-Output ''
-    $Archivos = Get-ChildItem -File | Where-Object { $_.Extension -eq ".$Extension" }
-    $CantidadArchivos = $Archivos.Count
-
-    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
-
-    Write-Output ''
-    Write-Output "Cantidad de archivos con la extensiÇÎÇ¬n '.$Extension': $CantidadArchivos"
-    Write-Output ''
+function xx{
+    exit
 }
 
 function lnk {
@@ -273,20 +265,52 @@ function new {
     )
 
     if (-not $Extension) {
-        # Si no se proporciona ninguna extensiÇÎÇ¬n, crear una carpeta
+        # Si no se proporciona ninguna extensiÇÎÇZÇÎZÇÎÇZ¶ô¶¦n, crear una carpeta
         New-Item -ItemType Directory -Path (Join-Path -Path $PWD -ChildPath $Name)
     } else {
-        # Si se proporciona una extensiÇÎÇ¬n, crear un archivo con esa extensiÇÎÇ¬n
+        # Si se proporciona una extensiÇÎÇZÇÎZÇÎÇZ¶ô¶¦n, crear un archivo con esa extensiÇÎÇZÇÎZÇÎÇZ¶ô¶¦n
         $FileName = $Name + $Extension
         $FilePath = Join-Path -Path $PWD -ChildPath $FileName
         New-Item -ItemType File -Path $FilePath
     }
+    ff
 }
 
 
 
+#ccc deleted
+
+#dd with num assigned
+function dd ($number) {
+    $Archivos = Get-ChildItem
+    $directories = $Archivos | Where-Object { $_.PSIsContainer }  # Filtra solo directorios
+
+    if ($number -le $directories.Count -and $number -gt 0) {
+        $directory = $directories[$number - 1].FullName
+        Set-Location $directory
+        Write-Output "Moved to: $directory"
+    } else {
+        Write-Output "Invalid number: The number must be within the range of listed directories."
+    }
+    ff
+}
+
+
+function ddold {
+    param([string]$Ubicacion)
+    Set-Location $Ubicacion
+    ff
+}
+
+function dc {
+    param([string]$Ubicacion)
+    Set-Location ..
+    ff
+}
+
+
 # yellow resaltado added 2-5-24
-function ff {    
+function ffold {    
     Write-Output ''
     $Archivos = Get-ChildItem
     $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
@@ -302,6 +326,80 @@ function ff {
     
     Write-Output ''
     Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+
+function ffold2 {
+    Write-Output ''
+    $Archivos = Get-ChildItem
+    $i = 1
+
+    $Archivos | ForEach-Object {
+        $nameDisplay = $_.Name.Substring(0, [Math]::Min($_.Name.Length, 20))
+        $dateDisplay = $_.LastWriteTime.ToString("yyyyMMdd.HHmmss")  # Formato continuo sin espacios ni otros caracteres
+        # $extensionDisplay = $_.Extension -replace '^\.'  # Remueve el punto inicial en la extensiÇÎÇ¬n para limpiar la salida
+        $extensionDisplay = $_.Extension 
+        
+        if ($_.PSIsContainer) {
+            Write-Host (" {0,-5} {1,-20} {2,-14} {3,-10}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay) -BackgroundColor Yellow -ForegroundColor Black
+        } else {
+            Write-Output (" {0,-5} {1,-20} {2,-14} {3,-10}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay)
+        }
+        $i++
+    }
+    
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+# with space fir column (index), format date correct done
+function ff {
+    param(
+        [int]$nameLength = 20  # ParÇ­metro opcional con valor predeterminado de 20
+    )
+    Write-Output ''
+    $Archivos = Get-ChildItem
+    $i = 1
+
+    $Archivos | ForEach-Object {
+        $nameDisplay = $_.Name.Substring(0, [Math]::Min($_.Name.Length, $nameLength))
+        $dateDisplay = $_.LastWriteTime.ToString("yyyyMMdd.HHmmss")  # Formato continuo sin espacios ni otros caracteres
+        $extensionDisplay = $_.Extension 
+
+        if ($_.PSIsContainer) {
+            Write-Host (" {0,-3} {1,-$nameLength} {2,-14} {3,-10}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay) -BackgroundColor Yellow -ForegroundColor Black
+        } else {
+            Write-Output (" {0,-3} {1,-$nameLength} {2,-14} {3,-10}" -f $i, $nameDisplay, $dateDisplay, $extensionDisplay)
+        }
+        $i++
+    }
+    
+    $CantidadArchivos = ($Archivos | Where-Object { $_.PSIsContainer -eq $false }).Count
+    $CantidadCarpetas = ($Archivos | Where-Object { $_.PSIsContainer -eq $true }).Count
+    
+    Write-Output ''
+    Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
+    Write-Output ''
+}
+
+function fff {
+    param(
+        [string]$Extension
+    )
+
+    Write-Output ''
+    $Archivos = Get-ChildItem -File | Where-Object { $_.Extension -eq ".$Extension" }
+    $CantidadArchivos = $Archivos.Count
+
+    $Archivos | ForEach-Object { "{0,-30} {1} {2}" -f $_.Name.Substring(0, [Math]::Min($_.Name.Length, 30)), $_.LastWriteTime, $_.Extension }
+
+    Write-Output ''
+    Write-Output "Cantidad de archivos con la extensiÇÎÇ¬n '.$Extension': $CantidadArchivos"
     Write-Output ''
 }
 
@@ -353,8 +451,6 @@ function ffc {
     Write-Output "Cantidad de archivos: $CantidadArchivos, Cantidad de carpetas: $CantidadCarpetas"
     Write-Output ''
 }
-
-
 
 
 function ffr.pdf {
@@ -419,33 +515,158 @@ function ffr.folder {
     Write-Output ''
 }
 
+function qqold {
+    param(
+        [string]$RutaArchivo
+    )
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    Start-Process -FilePath $RutaCompleta
+}
 
 
 
+# function qq ($number) {
+#     Write-Output ''
+#     $Items = Get-ChildItem  # ObtÇ¸n tanto archivos como directorios como en ff
+#     $i = 1
 
-function e {
-    explorer.exe .
+#     if ($number -le $Items.Count -and $number -gt 0) {
+#         $item = $Items[$number - 1]  # Obtiene el Çðtem basado en el nÇ§mero de entrada
+#         if (-not $item.PSIsContainer) {  # Verifica si el Çðtem no es una carpeta
+#             $path = '"' + $item.FullName + '"'  # Encierra la ruta en comillas para manejar espacios y caracteres especiales
+#             # Salida de depuraciÇün para verificar las rutas
+#             Write-Output "Debug: Attempting to open file with path: $path"
+
+#             try {
+#                 Start-Process -FilePath $path -NoNewWindow  # Intenta abrir el archivo con su ruta correctamente formateada
+#                 Write-Output "Opening file: $path"
+#             } catch {
+#                 Write-Output "Cannot open the file: $path. It may not be associated with an application or is not executable."
+#                 Write-Output "Error details: $_"  # Proporciona detalles del error
+#             }
+#         } else {
+#             Write-Output "The selected item is a directory and cannot be opened."
+#         }
+#     } else {
+#         Write-Output "Invalid number: The number must be within the range of listed files."
+#     }
+#     Write-Output ''
+# }
+
+
+function qq ($number) {
+    Write-Output ''
+    $Items = Get-ChildItem  # ObtÇ¸n tanto archivos como directorios como en ff
+    $i = 1
+
+    if ($number -le $Items.Count -and $number -gt 0) {
+        $item = $Items[$number - 1]  # Obtiene el Çðtem basado en el nÇ§mero de entrada
+        if (-not $item.PSIsContainer) {  # Verifica si el Çðtem no es una carpeta
+            $path = $item.FullName  # La ruta no necesita estar en comillas para Invoke-Item
+
+            Write-Output "Debug: Attempting to open file with path: $path"
+            try {
+                Invoke-Item $path  # Usa Invoke-Item para abrir el archivo con su aplicaciÇün asociada
+                Write-Output "Opening file: $path"
+            } catch {
+                Write-Output "Cannot open the file: $path. There may be an issue with file association or access permissions."
+                Write-Output "Error details: $_"  # Proporciona detalles del error
+            }
+        } else {
+            Write-Output "The selected item is a directory and cannot be opened."
+        }
+    } else {
+        Write-Output "Invalid number: The number must be within the range of listed files."
+    }
     Write-Output ''
 }
 
-#dont use this, oo is to far from left hand
-function oo {
-    param(
-        [string]$RutaArchivo
-    )
+# function qqcat ($number) {
+#     Write-Output('')
+#     Write-Host ('----------------------------------------------------------------------') -BackgroundColor Yellow -ForegroundColor Black  # LÇðnea resaltada en amarillo}
+    
 
-    $RutaCompleta = Resolve-Path $RutaArchivo
-    Start-Process -FilePath $RutaCompleta
+#     $Items = Get-ChildItem  # ObtÇ¸n tanto archivos como directorios como en ff
+#     $i = 1
+    
+#     if ($number -le $Items.Count -and $number -gt 0) {
+#         $item = $Items[$number - 1]  # Obtiene el Çðtem basado en el nÇ§mero de entrada
+#         if (-not $item.PSIsContainer) {  # Verifica si el Çðtem no es una carpeta
+#             $path = $item.FullName  # La ruta no necesita estar en comillas para Invoke-Item
+
+#             Write-Output('')
+#             Write-Host "FileName = '$($item.Name)' ---------------------------------------------------------- "   # Muestra el nombre del archivo resaltado en amarillo
+#             Write-Output('')
+#             # Write-Output "Debug: Attempting to open file with path: $path"
+#             try {
+#                 Get-Content $path  # Usa Invoke-Item para abrir el archivo con su aplicaciÇün asociada
+#                 # Write-Output "Opening file: $path"
+#             } catch {
+#                 Write-Output "Cannot open the file: $path. There may be an issue with file association or access permissions."
+#                 Write-Output "Error details: $_"  # Proporciona detalles del error
+#             }
+#         } else {
+#             Write-Output "The selected item is a directory and cannot be opened."
+#         }
+#     } else {
+#         Write-Output "Invalid number: The number must be within the range of listed files."
+#     }
+#     Write-Output ''
+# }
+
+
+
+
+function qqdepuracion ($number) {
+    Write-Output ''
+    $Archivos = Get-ChildItem  # ObtÇ¸n todos los archivos y directorios como en ff
+    $i = 1
+    $files = @()  # Array para mantener solo los archivos
+
+    # Recorremos todos los elementos como en ff, pero guardamos solo archivos en 'files'
+    $Archivos | ForEach-Object {
+        if (-not $_.PSIsContainer) {  # Si es un archivo, aÇñÇ­delo al array 'files'
+            $files += $_
+        }
+        $i++  # Incrementa el Çðndice general aunque no lo usaremos aquÇð
+    }
+
+    # DepuraciÇün: muestra los archivos y sus Çðndices
+    Write-Output "List of files and indices:"
+    $j = 1
+    foreach ($file in $files) {
+        Write-Output "$j`: $file"
+        $j++
+    }
+
+    # Chequea que el nÇ§mero estÇ¸ en el rango de archivos disponibles
+    if ($number -le $files.Count -and $number -gt 0) {
+        $file = $files[$number - 1].FullName  # Obtiene la ruta completa del archivo seleccionado
+        Start-Process -FilePath $file -NoNewWindow  # Abre el archivo con la aplicaciÇün predeterminada
+        Write-Output "Opening file: $file"
+    } else {
+        Write-Output "Invalid number: The number must be within the range of listed files."
+    }
+    Write-Output ''
 }
 
-function qq {
-    param(
-        [string]$RutaArchivo
-    )
 
-    $RutaCompleta = Resolve-Path $RutaArchivo
-    Start-Process -FilePath $RutaCompleta
+
+function qqnew ($number) {
+    $Archivos = Get-ChildItem
+    # Filtra solo archivos, excluyendo directorios
+    $files = $Archivos | Where-Object { -not $_.PSIsContainer }
+
+    # Verifica que el nÇ§mero estÇ­ dentro del rango correcto
+    if ($number -le $files.Count -and $number -gt 0) {
+        $file = $files[$number - 1].FullName  # Obtiene la ruta completa del archivo
+        Start-Process -FilePath $file -NoNewWindow  # Abre el archivo con la aplicaciÇün predeterminada
+        Write-Output "Opening file: $file"
+    } else {
+        Write-Output "Invalid number: The number must be within the range of listed files."
+    }
 }
+
 
 
 #donde use windows photos application, hard to configure, impossible, install honeyview from #bandisoft.com
@@ -579,7 +800,20 @@ function pl {
 }
 
 
+#dont use this, oo is to far from left hand
+function oo {
+    param(
+        [string]$RutaArchivo
+    )
 
+    $RutaCompleta = Resolve-Path $RutaArchivo
+    Start-Process -FilePath $RutaCompleta
+}
+
+function e {
+    explorer.exe .
+    Write-Output ''
+}
 
 
 Add-Type @"
@@ -804,15 +1038,15 @@ function ci{
     ff
 }
 
-function cac{
-    Set-Location "D:\G\des\cya"
-    ff
-}
+# function cac{
+#     Set-Location "D:\G\des\cya"
+#     ff
+# }
 
-function cacc{
-    Set-Location "D:\G\des\cya\cya2024"
-    ff
-}
+# function cac24{
+#     Set-Location "D:\G\des\cya\cya2024"
+#     ff
+# }
 
 function caa{
     Set-Location "D:\G\des\cya\aypprogs"
@@ -820,7 +1054,7 @@ function caa{
 }
 
 function caa.pcb{
-    Set-Location "D:\G\des\cya\aypprogs\Electronics_Dtype\PCB"
+    Set-Location "D:\G\des\cya\aypprogs\Electronics_Dtype\PCB\Kicad_AIOTRONIC"
     ff
 }
 
@@ -867,12 +1101,17 @@ function gg.ow{
     ff
 }
 
-function dd{
+function ad{
     Set-Location "D:\ADescargas"
     ff
 }
 
-function ddd{
+function discod{
+    Set-Location "D:\"
+    ff
+}
+
+function discoc{
     Set-Location "D:\"
     ff
 }
@@ -940,7 +1179,19 @@ function whats {
     Start-Process "https://web.whatsapp.com/"
 }
 
+function gexcel {
+    Start-Process "D:\G\des\Cuaderno_MINI-Puntos_a_aprovechar\cuadmini_puntos_por_aprovechar.gsheet"
+}
 
+function compartido{
+    Set-Location "C:\Users\Usuario\Documents\Compartido AIO"
+    ff
+}
+
+function nomata{
+    Set-Location "D:\G\des\dentro1\dentro2\dentro3\AntiDejaderaDeCosasIniciadas"
+    ff
+}
 
 # FUNCTIONALITIES WORK
 
@@ -985,19 +1236,7 @@ function url ($Enlace, $NombreArchivo) {
     ff
 }
 
-#ccc deleted
 
-function cc {
-    param([string]$Ubicacion)
-    Set-Location $Ubicacion
-    ff
-}
-
-function dc {
-    param([string]$Ubicacion)
-    Set-Location ..
-    ff
-}
 
 function ic{
     Set-Location "D:\G\des\dentro1\dentro2\dentro3\CySed_&Dict\dentro2 CumpleMio\dentro4 Inicio COmpatible"
@@ -1038,3 +1277,162 @@ function re {
     }
 }
 
+function cac{
+    Set-Location "D:\G\des\cya"
+    ff
+}
+
+function cac24{
+    Set-Location "D:\G\des\cya\cya2024"
+    ff
+}
+
+
+function ggee{
+    Set-Location "D:\G"
+    ff
+}
+
+#qq with number implementation done, dd with number done, ff done, all with numbers :)
+#copy the code of qq only, the rest has not changed
+
+
+
+# -----------------------------------------------------------------------
+
+#show in pshell with first line yellow indicator
+
+function alp{
+    Set-Location "D:\G\des\alp\dentro1"
+    ff
+}
+function gg.edge {
+    Start-Process "msedge.exe" -ArgumentList "https://drive.google.com/drive/u/0/folders/1kMf-IXcj78RbKDjRRoxI8Oxs_OTxr3fD"
+}
+
+
+
+function qcat ($number) {
+    Write-Output('')
+    Write-Host ('----------------------------------------------------------------------') -BackgroundColor Yellow -ForegroundColor Black  # LÇðnea resaltada en amarillo}
+    
+
+    $Items = Get-ChildItem  # ObtÇ¸n tanto archivos como directorios como en ff
+    $i = 1
+    
+    if ($number -le $Items.Count -and $number -gt 0) {
+        $item = $Items[$number - 1]  # Obtiene el Çðtem basado en el nÇ§mero de entrada
+        if (-not $item.PSIsContainer) {  # Verifica si el Çðtem no es una carpeta
+            $path = $item.FullName  # La ruta no necesita estar en comillas para Invoke-Item
+
+            Write-Output('')
+            Write-Host "FileName = '$($item.Name)' ---------------------------------------------------------- "   # Muestra el nombre del archivo resaltado en amarillo
+            Write-Output('')
+            # Write-Output "Debug: Attempting to open file with path: $path"
+            try {
+                Get-Content $path  # Usa Invoke-Item para abrir el archivo con su aplicaciÇün asociada
+                # Write-Output "Opening file: $path"
+            } catch {
+                Write-Output "Cannot open the file: $path. There may be an issue with file association or access permissions."
+                Write-Output "Error details: $_"  # Proporciona detalles del error
+            }
+        } else {
+            Write-Output "The selected item is a directory and cannot be opened."
+        }
+    } else {
+        Write-Output "Invalid number: The number must be within the range of listed files."
+    }
+    Write-Output ''
+}
+
+function Encrypt-File {
+    param (
+        [string]$FilePath,
+        [string]$Password
+    )
+
+    $plainText = Get-Content $FilePath -Raw
+    $plainBytes = [System.Text.Encoding]::UTF8.GetBytes($plainText)
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $key = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Password))
+
+    $aes = [System.Security.Cryptography.Aes]::Create()
+    $aes.Key = $key
+    $aes.GenerateIV()
+
+    $encryptor = $aes.CreateEncryptor($aes.Key, $aes.IV)
+    $ms = New-Object System.IO.MemoryStream
+    $cs = New-Object System.Security.Cryptography.CryptoStream $ms, $encryptor, [System.Security.Cryptography.CryptoStreamMode]::Write
+    $cs.Write($plainBytes, 0, $plainBytes.Length)
+    $cs.Close()
+
+    $encryptedBytes = $ms.ToArray()
+    $result = [byte[]]($aes.IV + $encryptedBytes)
+    [System.IO.File]::WriteAllBytes($FilePath, $result)
+
+    Write-Host "File encrypted successfully."
+}
+
+function Decrypt-File {
+    param (
+        [string]$FilePath,
+        [string]$Password
+    )
+
+    $encryptedBytes = [System.IO.File]::ReadAllBytes($FilePath)
+    $aes = [System.Security.Cryptography.Aes]::Create()
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $key = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Password))
+
+    $iv = $encryptedBytes[0..15]
+    $cipherText = $encryptedBytes[16..($encryptedBytes.Length - 1)]
+
+    $aes.Key = $key
+    $aes.IV = $iv
+    $decryptor = $aes.CreateDecryptor($aes.Key, $aes.IV)
+
+    $ms = New-Object System.IO.MemoryStream
+    $cs = New-Object System.Security.Cryptography.CryptoStream $ms, $decryptor, [System.Security.Cryptography.CryptoStreamMode]::Write
+    $cs.Write($cipherText, 0, $cipherText.Length)
+    $cs.Close()
+
+    $plainBytes = $ms.ToArray()
+    $plainText = [System.Text.Encoding]::UTF8.GetString($plainBytes)
+    
+    Write-Output $plainText
+}
+
+function qqcatsafe1 {
+    param (
+        [int]$number
+    )
+    
+    $password = Read-Host "Enter password" -AsSecureString
+    $plainPassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))
+
+    $Items = Get-ChildItem
+    if ($number -le $Items.Count -and $number -gt 0) {
+        $item = $Items[$number - 1]
+        if (-not $item.PSIsContainer) {
+            $path = $item.FullName
+            
+            Write-Host "Archivo: $($item.Name)" -BackgroundColor Yellow
+            Write-Host ''
+            
+            try {
+                $content = Decrypt-File -FilePath $path -Password $plainPassword
+                Write-Output $content
+            } catch {
+                Write-Host "Cannot open the file: $path. There may be an issue with file association or access permissions."
+                Write-Host "Error details: $_"
+            }
+        } else {
+            Write-Host "The selected item is a directory and cannot be opened."
+        }
+    } else {
+        Write-Host "Invalid number: The number must be within the range of listed files."
+    }
+    Write-Host ''
+}
